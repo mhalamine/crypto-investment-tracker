@@ -24,6 +24,12 @@ Single-page, offline-friendly crypto portfolio tracker built with vanilla HTML/C
 2) Open http://localhost:4173 (or the URL your server prints).
 3) Add the app to your home screen or desktop for offline access after the first load.
 
+### Save as a PWA (Install)
+- **Desktop (Chrome/Edge):** Open the app, click the “Install app” icon in the address bar, then confirm.
+- **Android (Chrome):** Open the URL, tap the overflow menu (`⋮`), choose “Install app” or “Add to Home screen.”
+- **iOS (Safari):** Open the URL, tap the Share icon, then “Add to Home Screen.” Launch from the new icon to use the PWA shell.
+- After installation, the app works offline using the cached assets and your local data.
+
 ## Usage Tips
 - Adding prices: include the CoinPaprika ID (auto-filled when selecting a search result) to enable live updates. Without an ID, the app falls back to your last trade price for that asset.
 - Refresh prices: `Settings → Refresh Prices` (respects 15-minute cache).

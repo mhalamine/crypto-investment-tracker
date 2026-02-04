@@ -1,335 +1,346 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Crypto Investment Tracker</title>
-    <meta name="theme-color" content="#0c6b63" />
-    <meta name="description" content="Track crypto buys, sells, averages, and portfolio performance." />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="icons/icon-192.png" />
-    <link rel="apple-touch-icon" href="icons/icon-192.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="app">
-      <header class="app-header">
-        <div>
-          <p class="eyebrow">Crypto Portfolio</p>
-          <h1>Investment Tracker</h1>
-          <p class="subtitle">
-            Record buys and sells, track average price, and monitor your portfolio with live market prices.
-          </p>
-        </div>
-      </header>
 
-      <nav class="tabs" aria-label="Tracker sections">
-        <div class="tablist" role="tablist">
-          <button class="tab active" role="tab" id="tab-add" aria-controls="panel-add" aria-selected="true">
-            Add
-          </button>
-          <button class="tab" role="tab" id="tab-portfolio" aria-controls="panel-portfolio" aria-selected="false">
-            Portfolio
-          </button>
-          <button class="tab" role="tab" id="tab-history" aria-controls="panel-history" aria-selected="false">
-            History
-          </button>
-          <button class="tab" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false">
-            Settings
-          </button>
-        </div>
-      </nav>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crypto Investment Tracker</title>
+  <meta name="theme-color" content="#0c6b63" />
+  <meta name="description" content="Track crypto buys, sells, averages, and portfolio performance." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
 
-      <div class="tab-panels">
-        <section class="tab-panel" id="panel-add" role="tabpanel" aria-labelledby="tab-add">
-          <section class="grid">
-            <div class="card form-card">
-              <div class="section-title">
-                <h2>Add Transaction</h2>
-                <p>Enter what you bought or sold. Prices are recorded in USD.</p>
-              </div>
-              <form id="txForm" autocomplete="off">
-                <div class="field-row">
-                  <div class="toggle-field">
-                    <span class="field-label">Type</span>
-                    <div class="toggle-group" role="group" aria-label="Transaction type">
-                      <button class="toggle active" type="button" data-type="buy" aria-pressed="true">Buy</button>
-                      <button class="toggle" type="button" data-type="sell" aria-pressed="false">Sell</button>
-                    </div>
-                    <input id="txType" type="hidden" value="buy" required />
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Crypto Portfolio</p>
+        <h1>Investment Tracker</h1>
+        <p class="subtitle">
+          Record buys and sells, track average price, and monitor your portfolio with live market prices.
+        </p>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Tracker sections">
+      <div class="tablist" role="tablist">
+        <button class="tab active" role="tab" id="tab-add" aria-controls="panel-add" aria-selected="true">
+          Add
+        </button>
+        <button class="tab" role="tab" id="tab-portfolio" aria-controls="panel-portfolio" aria-selected="false">
+          Portfolio
+        </button>
+        <button class="tab" role="tab" id="tab-history" aria-controls="panel-history" aria-selected="false">
+          History
+        </button>
+        <button class="tab" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false">
+          Settings
+        </button>
+      </div>
+    </nav>
+
+    <div class="tab-panels">
+      <section class="tab-panel" id="panel-add" role="tabpanel" aria-labelledby="tab-add">
+        <section class="grid">
+          <div class="card form-card">
+            <div class="section-title">
+              <h2>Add Transaction</h2>
+              <p>Enter what you bought or sold. Prices are recorded in USD.</p>
+            </div>
+            <form id="txForm" autocomplete="off">
+              <div class="field-row">
+                <div class="toggle-field">
+                  <span class="field-label">Type</span>
+                  <div class="toggle-group" role="group" aria-label="Transaction type">
+                    <button class="toggle active" type="button" data-type="buy" aria-pressed="true">Buy</button>
+                    <button class="toggle" type="button" data-type="sell" aria-pressed="false">Sell</button>
                   </div>
-                  <label class="date-field">
-                    Date &amp; Time
-                    <div class="date-input">
-                      <input id="txDate" type="datetime-local" required />
-                      <button class="ghost" id="setNowBtn" type="button">Now</button>
-                    </div>
-                  </label>
+                  <input id="txType" type="hidden" value="buy" required />
                 </div>
-
-                <div id="buyFields">
-                  <div class="field-row">
-                    <label class="grow">
-                      Coin Search
-                      <input id="coinSearch" type="text" placeholder="Search by name or symbol" />
-                    </label>
-                    <input id="coinId" type="hidden" />
+                <label class="date-field">
+                  Date &amp; Time
+                  <div class="date-input">
+                    <input id="txDate" type="datetime-local" required />
+                    <button class="ghost" id="setNowBtn" type="button">Now</button>
                   </div>
-
-                  <div id="coinResults" class="coin-results" aria-live="polite"></div>
-
-                  <div class="field-row">
-                    <input id="coinSymbol" type="hidden" />
-                    <label class="grow">
-                      Name
-                      <input id="coinName" type="text" placeholder="Bitcoin" />
-                    </label>
-                  </div>
-                </div>
-
-                <div id="sellFields" class="sell-fields" hidden>
-                  <label class="grow">
-                    Sell Coin
-                    <select id="sellCoin"></select>
-                  </label>
-                  <p id="sellAvailable" class="note"></p>
-                </div>
-
-                <div class="field-row">
-                  <label>
-                    Quantity
-                    <input id="txQuantity" type="number" min="0" step="any" required />
-                  </label>
-                  <label>
-                    Price (USD)
-                    <input id="txPrice" type="number" min="0" step="any" required />
-                  </label>
-                  <label>
-                    Fee (USD)
-                    <input id="txFee" type="number" min="0" step="any" placeholder="0" />
-                  </label>
-                </div>
-
-                <label>
-                  Notes (optional)
-                  <input id="txNotes" type="text" placeholder="DCA, long-term hold, etc." />
                 </label>
+              </div>
 
-                <div class="form-footer">
-                  <div>
-                    <span class="label">Total</span>
-                    <strong id="txTotal">$0.00</strong>
-                  </div>
-                  <button id="txSubmitBtn" type="submit">Add Transaction</button>
+              <div id="buyFields">
+                <div class="field-row">
+                  <label class="grow">
+                    Coin Search
+                    <input id="coinSearch" type="text" placeholder="Search by name or symbol" />
+                  </label>
+                  <input id="coinId" type="hidden" />
                 </div>
-              </form>
-              <p id="formMessage" class="form-message"></p>
-              <p id="coinStatus" class="note"></p>
-            </div>
-          </section>
-        </section>
 
-        <section class="tab-panel" id="panel-portfolio" role="tabpanel" aria-labelledby="tab-portfolio" hidden>
-          <section class="summary" id="summaryCards">
-            <div class="card metric">
-              <span class="label">Total Invested</span>
-              <strong id="totalInvested">$0.00</strong>
-              <small id="investedHint">Net cash in</small>
-            </div>
-            <div class="card metric">
-              <span class="label">Current Value</span>
-              <strong id="currentValue">$0.00</strong>
-              <small id="valueHint">Using live prices</small>
-            </div>
-            <div class="card metric">
-              <span class="label">Unrealized P/L</span>
-              <strong id="unrealizedPL">$0.00</strong>
-              <small id="unrealizedHint">On current holdings</small>
-            </div>
-            <div class="card metric">
-              <span class="label">Realized P/L</span>
-              <strong id="realizedPL">$0.00</strong>
-              <small id="realizedHint">From closed trades</small>
-            </div>
-          </section>
+                <div id="coinResults" class="coin-results" aria-live="polite"></div>
 
-          <section class="grid">
-            <div class="card holdings-card">
-              <div class="section-title">
-                <h2>Holdings Overview</h2>
-                <p>Average price and current value per asset.</p>
+                <div class="field-row">
+                  <input id="coinSymbol" type="hidden" />
+                  <label class="grow">
+                    Name
+                    <input id="coinName" type="text" placeholder="Bitcoin" />
+                  </label>
+                </div>
               </div>
-              <div class="table-wrap">
-                <table id="holdingsTable">
-                  <thead>
-                    <tr>
-                      <th>Coin</th>
-                      <th>Holdings</th>
-                      <th>Avg Cost</th>
-                      <th>Cost Basis</th>
-                      <th>Current Price</th>
-                      <th>Current Value</th>
-                      <th>Unrealized P/L</th>
-                      <th>Realized P/L</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-              <p id="priceNote" class="note"></p>
-            </div>
-          </section>
 
-          <section class="grid charts">
-            <div class="card">
-              <div class="section-title">
-                <h2>Allocation</h2>
-                <p>Current portfolio split by value.</p>
+              <div id="sellFields" class="sell-fields" hidden>
+                <label class="grow">
+                  Sell Coin
+                  <select id="sellCoin"></select>
+                </label>
+                <p id="sellAvailable" class="note"></p>
               </div>
-            <div class="chart-wrap">
-              <canvas id="allocationChart" height="240"></canvas>
-            </div>
-            <p id="allocationNote" class="note"></p>
+
+              <div class="field-row">
+                <label>
+                  Quantity
+                  <input id="txQuantity" type="number" min="0" step="any" required />
+                </label>
+                <label>
+                  Price (USD)
+                  <input id="txPrice" type="number" min="0" step="any" required />
+                </label>
+                <label>
+                  Fee (USD)
+                  <input id="txFee" type="number" min="0" step="any" placeholder="0" />
+                </label>
+              </div>
+
+              <label>
+                Notes (optional)
+                <input id="txNotes" type="text" placeholder="DCA, long-term hold, etc." />
+              </label>
+
+              <div class="form-footer">
+                <div>
+                  <span class="label">Total</span>
+                  <strong id="txTotal">$0.00</strong>
+                </div>
+                <button id="txSubmitBtn" type="submit">Add Transaction</button>
+              </div>
+            </form>
+            <p id="formMessage" class="form-message"></p>
+            <p id="coinStatus" class="note"></p>
           </div>
-            <div class="card">
-              <div class="section-title">
-                <h2>Portfolio Value vs Invested</h2>
-                <p>Value based on latest trade prices when live data is missing.</p>
-              </div>
-              <div class="chart-wrap">
-                <canvas id="investedChart" height="240"></canvas>
-              </div>
-              <p id="valueNote" class="note"></p>
-            </div>
-          </section>
+        </section>
+      </section>
 
-          <section class="grid charts">
-            <div class="card">
-              <div class="section-title">
-                <h2>Unrealized P/L Over Time</h2>
-                <p>Based on holdings and last known trade price.</p>
-              </div>
-              <div class="chart-wrap">
-                <canvas id="unrealizedChart" height="240"></canvas>
-              </div>
-            </div>
-            <div class="card">
-              <div class="section-title">
-                <h2>Realized P/L Over Time</h2>
-                <p>Cumulative gains or losses from sells.</p>
-              </div>
-              <div class="chart-wrap">
-                <canvas id="realizedChart" height="240"></canvas>
-              </div>
-            </div>
-            <div class="card">
-              <div class="section-title">
-                <h2>Holdings Over Time</h2>
-                <p>Stacked quantities by asset.</p>
-              </div>
-              <div class="chart-wrap">
-                <canvas id="holdingsChart" height="240"></canvas>
-              </div>
-            </div>
-            <div class="card">
-              <div class="section-title">
-                <h2>Cost Basis vs Current Value</h2>
-                <p>Compare what you invested vs current holdings value.</p>
-              </div>
-              <div class="chart-wrap">
-                <canvas id="costValueChart" height="240"></canvas>
-              </div>
-              <p id="costValueNote" class="note"></p>
-            </div>
-            <div class="card">
-              <div class="section-title">
-                <h2>Buy vs Sell Volume</h2>
-                <p>Monthly transaction volume in USD.</p>
-              </div>
-              <div class="chart-wrap">
-                <canvas id="buySellChart" height="240"></canvas>
-              </div>
-            </div>
-            <div class="card">
-              <div class="section-title">
-                <h2>Performance by Coin</h2>
-                <p>ROI based on realized + unrealized performance.</p>
-              </div>
-              <div class="chart-wrap">
-                <canvas id="performanceChart" height="240"></canvas>
-              </div>
-              <p id="performanceNote" class="note"></p>
-            </div>
-          </section>
+      <section class="tab-panel" id="panel-portfolio" role="tabpanel" aria-labelledby="tab-portfolio" hidden>
+        <section class="summary" id="summaryCards">
+          <div class="card metric">
+            <span class="label">Total Invested</span>
+            <strong id="totalInvested">$0.00</strong>
+            <small id="investedHint">Net cash in</small>
+          </div>
+          <div class="card metric">
+            <span class="label">Current Value</span>
+            <strong id="currentValue">$0.00</strong>
+            <small id="valueHint">Using live prices</small>
+          </div>
+          <div class="card metric">
+            <span class="label">Unrealized P/L</span>
+            <strong id="unrealizedPL">$0.00</strong>
+            <small id="unrealizedHint">On current holdings</small>
+          </div>
+          <div class="card metric">
+            <span class="label">Realized P/L</span>
+            <strong id="realizedPL">$0.00</strong>
+            <small id="realizedHint">From closed trades</small>
+          </div>
         </section>
 
-        <section class="tab-panel" id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
-          <section class="card">
-            <div class="section-title inline">
-              <div>
-                <h2>Transaction History</h2>
-                <p>Every buy and sell, fully searchable.</p>
-              </div>
-              <div class="filters">
-                <select id="filterCoin">
-                  <option value="all">All coins</option>
-                </select>
-                <select id="filterType">
-                  <option value="all">All</option>
-                  <option value="buy">Buy</option>
-                  <option value="sell">Sell</option>
-                </select>
-                <input id="filterText" type="text" placeholder="Filter by coin or notes" />
-                <button class="ghost danger" id="clearAllBtn" type="button">Clear All</button>
-              </div>
+        <section class="grid">
+          <div class="card holdings-card">
+            <div class="section-title">
+              <h2>Holdings Overview</h2>
+              <p>Average price and current value per asset.</p>
             </div>
             <div class="table-wrap">
-              <table id="txTable">
+              <table id="holdingsTable">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Type</th>
                     <th>Coin</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Fee</th>
-                    <th>Total</th>
-                    <th>Notes</th>
-                    <th></th>
+                    <th>Holdings</th>
+                    <th>Avg Cost</th>
+                    <th>Cost Basis</th>
+                    <th>Current Price</th>
+                    <th>Current Value</th>
+                    <th>Unrealized P/L</th>
+                    <th>Realized P/L</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
               </table>
             </div>
-          </section>
+            <p id="priceNote" class="note"></p>
+          </div>
         </section>
 
-        <section class="tab-panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
-          <section class="card">
+        <section class="grid charts">
+          <div class="card">
             <div class="section-title">
-              <h2>Data &amp; Updates</h2>
-              <p>Refresh live prices, export your history, or back up your data.</p>
+              <h2>Allocation</h2>
+              <p>Current portfolio split by value.</p>
             </div>
-            <div class="settings-actions">
-              <button class="ghost" id="refreshPricesBtn" type="button">Refresh Prices</button>
-              <button class="ghost" id="exportCsvBtn" type="button">Export CSV</button>
-              <button class="ghost" id="downloadBackupBtn" type="button">Download Backup</button>
-              <button class="ghost" id="restoreBackupBtn" type="button">Restore Backup</button>
+            <div class="chart-wrap">
+              <canvas id="allocationChart" height="240"></canvas>
             </div>
-            <input id="backupFileInput" type="file" accept="application/json" hidden />
-          </section>
+            <p id="allocationNote" class="note"></p>
+          </div>
+          <div class="card">
+            <div class="section-title">
+              <h2>Portfolio Value vs Invested</h2>
+              <p>Value based on latest trade prices when live data is missing.</p>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="investedChart" height="240"></canvas>
+            </div>
+            <p id="valueNote" class="note"></p>
+          </div>
         </section>
+
+        <section class="grid charts">
+          <div class="card">
+            <div class="section-title">
+              <h2>Unrealized P/L Over Time</h2>
+              <p>Based on holdings and last known trade price.</p>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="unrealizedChart" height="240"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title">
+              <h2>Realized P/L Over Time</h2>
+              <p>Cumulative gains or losses from sells.</p>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="realizedChart" height="240"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title">
+              <h2>Holdings Over Time</h2>
+              <p>Stacked quantities by asset.</p>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="holdingsChart" height="240"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title">
+              <h2>Cost Basis vs Current Value</h2>
+              <p>Compare what you invested vs current holdings value.</p>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="costValueChart" height="240"></canvas>
+            </div>
+            <p id="costValueNote" class="note"></p>
+          </div>
+          <div class="card">
+            <div class="section-title">
+              <h2>Buy vs Sell Volume</h2>
+              <p>Monthly transaction volume in USD.</p>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="buySellChart" height="240"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title">
+              <h2>Performance by Coin</h2>
+              <p>ROI based on realized + unrealized performance.</p>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="performanceChart" height="240"></canvas>
+            </div>
+            <p id="performanceNote" class="note"></p>
+          </div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+        <section class="card">
+          <div class="section-title inline">
+            <div>
+              <h2>Transaction History</h2>
+              <p>Every buy and sell, fully searchable.</p>
+            </div>
+            <div class="filters">
+              <select id="filterCoin">
+                <option value="all">All coins</option>
+              </select>
+              <select id="filterType">
+                <option value="all">All</option>
+                <option value="buy">Buy</option>
+                <option value="sell">Sell</option>
+              </select>
+              <input id="filterText" type="text" placeholder="Filter by coin or notes" />
+              <button class="ghost danger" id="clearAllBtn" type="button">Clear All</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="txTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Coin</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                  <th>Fee</th>
+                  <th>Total</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+        <section class="card">
+          <div class="section-title">
+            <h2>Data &amp; Updates</h2>
+            <p>Refresh live prices, export your history, or back up your data.</p>
+          </div>
+          <div class="settings-actions">
+            <button class="ghost" id="refreshPricesBtn" type="button">Refresh Prices</button>
+            <button class="ghost" id="exportCsvBtn" type="button">Export CSV</button>
+            <button class="ghost" id="downloadBackupBtn" type="button">Download Backup</button>
+            <button class="ghost" id="restoreBackupBtn" type="button">Restore Backup</button>
+          </div>
+          <input id="backupFileInput" type="file" accept="application/json" hidden />
+        </section>
+      </section>
+    </div>
+  </div>
+  <footer class="app-footer">
+    <div class="footer-card">
+      <div class="footer-credit">
+        <span class="heart" aria-hidden="true">♥</span>
+        <span>Developed with love by</span>
+        <a href="https://alamine.me" target="_blank" rel="noopener">Mohamed Al Amine</a>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="app.js"></script>
-  </body>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+
 </html>
