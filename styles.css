@@ -424,7 +424,7 @@ select:focus {
 }
 
 .grow {
-  flex: 1 1 220px;
+  flex: 1 1 20px;
 }
 
 .coin-results {
@@ -477,10 +477,19 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  align-items: flex-start;
+}
+
+.sell-fields>* {
+  margin: 0;
 }
 
 .sell-fields select {
   max-width: 320px;
+}
+
+.sell-fields .note {
+  margin: 6px 0 0 0;
 }
 
 .form-footer {
