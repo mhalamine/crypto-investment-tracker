@@ -1,5 +1,7 @@
 # Crypto Investment Tracker
 
+<img width="1452" height="761" alt="screenshot-alamine me-2026-02-04-12-26-10-784" src="https://github.com/user-attachments/assets/a7579bdb-21e4-435b-a7fb-a488b8480daa" />
+
 Single-page, offline-friendly crypto portfolio tracker built with vanilla HTML/CSS/JS. It lets you log buys and sells, computes average cost, tracks realized/unrealized P&L, and visualizes your portfolio with Chart.js. Live pricing comes from the public CoinPaprika API; all data stays in the browser via `localStorage`.
 
 ## Features
