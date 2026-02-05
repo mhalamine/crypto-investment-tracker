@@ -112,6 +112,69 @@ strong {
   font-size: 1.1rem;
 }
 
+.install-prompt {
+  position: fixed;
+  inset: auto 0 16px 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 16px;
+  z-index: 30;
+}
+
+.install-prompt[hidden] {
+  display: none !important;
+}
+
+.install-card {
+  width: min(520px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: auto;
+}
+
+.install-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.install-title {
+  margin: 0;
+  font-weight: 700;
+  font-family: "Sora", sans-serif;
+}
+
+.install-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.install-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media (max-width: 540px) {
+  .install-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .install-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
 @media (max-width: 640px) {
   .footer-card {
     align-items: center;

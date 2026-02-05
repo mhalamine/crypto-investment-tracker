@@ -93,6 +93,9 @@ const els = {
   restoreBackupBtn: document.getElementById("restoreBackupBtn"),
   backupFileInput: document.getElementById("backupFileInput"),
   clearAllBtn: document.getElementById("clearAllBtn"),
+  installPrompt: document.getElementById("installPrompt"),
+  installNowBtn: document.getElementById("installNowBtn"),
+  installLaterBtn: document.getElementById("installLaterBtn"),
 };
 
 let allocationChart = null;
@@ -104,6 +107,7 @@ let costValueChart = null;
 let buySellChart = null;
 let performanceChart = null;
 let latestMetrics = null;
+let deferredInstallPrompt = null;
 
 const percentageLabelPlugin = {
   id: "percentageLabels",
@@ -1419,6 +1423,8 @@ function init() {
     refreshPrices({ silent: true });
   }
 
+  setupInstallPrompt();
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("./service-worker.js").catch(() => {});
@@ -1427,3 +1433,65 @@ function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+const INSTALL_DISMISS_KEY = "cit.install.dismissed";
+
+function showInstallPrompt() {
+  if (!els.installPrompt) return;
+  const dismissed = localStorage.getItem(INSTALL_DISMISS_KEY);
+  if (dismissed === "true") return;
+  els.installPrompt.hidden = false;
+}
+
+function hideInstallPrompt({ dismiss = false } = {}) {
+  if (!els.installPrompt) return;
+  els.installPrompt.hidden = true;
+  if (dismiss) {
+    localStorage.setItem(INSTALL_DISMISS_KEY, "true");
+  }
+}
+
+function setupInstallPrompt() {
+  if (!els.installPrompt) return;
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    showInstallPrompt();
+  });
+
+  if (els.installNowBtn) {
+    els.installNowBtn.addEventListener("click", async () => {
+      if (!deferredInstallPrompt) {
+        hideInstallPrompt();
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      const result = await deferredInstallPrompt.userChoice;
+      if (result.outcome === "accepted") {
+        hideInstallPrompt({ dismiss: true });
+      } else {
+        hideInstallPrompt();
+      }
+      deferredInstallPrompt = null;
+    });
+  }
+
+  if (els.installLaterBtn) {
+    els.installLaterBtn.addEventListener("click", () => hideInstallPrompt({ dismiss: true }));
+  }
+
+  window.addEventListener("appinstalled", () => hideInstallPrompt({ dismiss: true }));
+
+  // Fallback: surface the prompt after a short delay if the browser doesn't fire beforeinstallprompt
+  const alreadyInstalled =
+    window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.navigator.standalone === true;
+  if (!alreadyInstalled) {
+    setTimeout(() => {
+      if (!deferredInstallPrompt) {
+        showInstallPrompt();
+      }
+    }, 2000);
+  }
+}
