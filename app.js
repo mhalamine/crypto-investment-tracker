@@ -96,6 +96,8 @@ const els = {
   installPrompt: document.getElementById("installPrompt"),
   installNowBtn: document.getElementById("installNowBtn"),
   installLaterBtn: document.getElementById("installLaterBtn"),
+  installSubtitle: document.getElementById("installSubtitle"),
+  installHint: document.getElementById("installHint"),
 };
 
 let allocationChart = null;
@@ -1436,6 +1438,84 @@ document.addEventListener("DOMContentLoaded", init);
 
 const INSTALL_DISMISS_KEY = "cit.install.dismissed";
 
+function getInstallContext() {
+  const ua = navigator.userAgent || navigator.vendor || "";
+  const isStandalone =
+    window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
+  const isIos = /iphone|ipad|ipod/i.test(ua);
+  const isAndroid = /android/i.test(ua);
+  const isSamsung = /samsungbrowser/i.test(ua);
+  const isEdge = /edg/i.test(ua);
+  const isFirefox = /firefox/i.test(ua);
+  const isChrome = /chrome|crios/i.test(ua) && !isEdge && !isSamsung && !isFirefox;
+  const supportsPrompt = "onbeforeinstallprompt" in window;
+
+  if (isStandalone) {
+    return { mode: "installed" };
+  }
+
+  if (isIos) {
+    return {
+      mode: "manual",
+      platform: "ios",
+      subtitle: "Add the tracker to your Home Screen for a full-screen experience.",
+      hint: "iPhone/iPad: tap Share, then Add to Home Screen.",
+    };
+  }
+
+  if (isAndroid && supportsPrompt && (isChrome || isEdge || isSamsung)) {
+    return {
+      mode: "prompt",
+      platform: "android-supported",
+      subtitle: "Install the tracker for quicker launch and offline use.",
+      hint: "Chrome/Edge/Samsung: tap Install when your browser shows the prompt.",
+    };
+  }
+
+  if (isAndroid && isFirefox) {
+    return {
+      mode: "manual",
+      platform: "android-firefox",
+      subtitle: "Add the tracker from your browser menu.",
+      hint: "Firefox: open the menu (⋮) and choose Install app or Add to Home screen.",
+    };
+  }
+
+  if (supportsPrompt) {
+    return {
+      mode: "prompt",
+      platform: "desktop-supported",
+      subtitle: "Install to open the tracker in its own window.",
+      hint: "Use the install icon in your address bar when the browser offers it.",
+    };
+  }
+
+  return {
+    mode: "manual",
+    platform: "fallback",
+    subtitle: "Install from your browser menu to keep the tracker handy.",
+    hint: isAndroid
+      ? "Open the browser menu and pick Add to Home screen or Install app."
+      : "Use your browser menu to install/pin this site (e.g., Add to Dock on Safari).",
+  };
+}
+
+function applyInstallCopy(context) {
+  if (els.installSubtitle && context.subtitle) {
+    els.installSubtitle.textContent = context.subtitle;
+  }
+  if (els.installHint) {
+    els.installHint.textContent = context.hint ?? "";
+    els.installHint.hidden = !context.hint;
+  }
+  if (els.installNowBtn) {
+    els.installNowBtn.textContent = context.mode === "manual" ? "Got it" : "Install";
+  }
+  if (els.installLaterBtn) {
+    els.installLaterBtn.textContent = context.mode === "manual" ? "Not now" : "Later";
+  }
+}
+
 function showInstallPrompt() {
   if (!els.installPrompt) return;
   const dismissed = localStorage.getItem(INSTALL_DISMISS_KEY);
@@ -1454,16 +1534,34 @@ function hideInstallPrompt({ dismiss = false } = {}) {
 function setupInstallPrompt() {
   if (!els.installPrompt) return;
 
-  window.addEventListener("beforeinstallprompt", (event) => {
-    event.preventDefault();
-    deferredInstallPrompt = event;
-    showInstallPrompt();
-  });
+  let installContext = getInstallContext();
+  applyInstallCopy(installContext);
+
+  if (installContext.mode === "installed") {
+    hideInstallPrompt({ dismiss: true });
+    return;
+  }
+
+  const useNativePrompt = installContext.mode === "prompt";
+
+  if (useNativePrompt) {
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      showInstallPrompt();
+    });
+  }
 
   if (els.installNowBtn) {
     els.installNowBtn.addEventListener("click", async () => {
+      if (installContext.mode === "manual") {
+        hideInstallPrompt({ dismiss: true });
+        return;
+      }
       if (!deferredInstallPrompt) {
-        hideInstallPrompt();
+        installContext = { ...installContext, mode: "manual" };
+        applyInstallCopy(installContext);
+        showInstallPrompt();
         return;
       }
       deferredInstallPrompt.prompt();
@@ -1489,7 +1587,7 @@ function setupInstallPrompt() {
     window.navigator.standalone === true;
   if (!alreadyInstalled) {
     setTimeout(() => {
-      if (!deferredInstallPrompt) {
+      if (installContext.mode === "manual" || !deferredInstallPrompt) {
         showInstallPrompt();
       }
     }, 2000);

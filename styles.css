@@ -158,6 +158,12 @@ strong {
   font-size: 0.9rem;
 }
 
+.install-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .install-actions {
   display: flex;
   gap: 10px;

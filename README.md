@@ -27,9 +27,10 @@ Single-page, offline-friendly crypto portfolio tracker built with vanilla HTML/C
 3) Add the app to your home screen or desktop for offline access after the first load.
 
 ### Save as a PWA (Install)
-- **Desktop (Chrome/Edge):** Open the app, click the “Install app” icon in the address bar, then confirm.
-- **Android (Chrome):** Open the URL, tap the overflow menu (`⋮`), choose “Install app” or “Add to Home screen.”
-- **iOS (Safari):** Open the URL, tap the Share icon, then “Add to Home Screen.” Launch from the new icon to use the PWA shell.
+- **Desktop (Chrome/Edge/Safari 17+):** Open the app, click the Install/Add to Dock icon in the address bar (or Safari’s “Add to Dock”), then confirm.
+- **Android (Chrome/Edge/Samsung):** Open the URL, tap the overflow menu (`⋮`), and choose “Install app” or “Add to Home screen.”
+- **Android (Firefox):** Open the menu (`⋮`), then pick “Install” or “Add to Home screen.”
+- **iOS (Safari/Chrome/Edge):** Tap the Share icon, then “Add to Home Screen.” Launch from the new icon to use the PWA shell.
 - After installation, the app works offline using the cached assets and your local data.
 
 ## Usage Tips
