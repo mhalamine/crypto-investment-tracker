@@ -43,7 +43,7 @@ strong {
 .app {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 36px 24px 60px;
+  padding: 36px 24px 30px;
 }
 
 .app-footer {
@@ -59,6 +59,17 @@ strong {
   align-items: center;
   justify-content: center;
   padding: 16px 18px;
+}
+
+.footer-badge {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.footer-badge img {
+  width: min(250px, 100%);
+  height: auto;
 }
 
 .footer-meta {
@@ -176,11 +187,13 @@ strong {
     flex-direction: column;
     align-items: flex-start;
   }
+
   .install-actions {
     width: 100%;
     justify-content: flex-end;
   }
 }
+
 @media (max-width: 640px) {
   .footer-card {
     align-items: center;
