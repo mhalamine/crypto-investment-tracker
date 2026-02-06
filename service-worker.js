@@ -1,15 +1,17 @@
-const CACHE_NAME = "cit-static-v1";
+const ASSET_VERSION = "2026-02-06-1";
+const CACHE_NAME = `cit-static-${ASSET_VERSION}`;
+const RUNTIME_CACHE = `cit-runtime-${ASSET_VERSION}`;
+const withVersion = (path) => `${path}?v=${ASSET_VERSION}`;
+
 const CORE_ASSETS = [
   "./",
   "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
+  withVersion("./styles.css"),
+  withVersion("./app.js"),
+  withVersion("./manifest.json"),
+  withVersion("./icons/icon-192.png"),
+  withVersion("./icons/icon-512.png"),
 ];
-
-const RUNTIME_CACHE = "cit-runtime-v1";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

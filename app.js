@@ -2,6 +2,8 @@ const API_BASE = "https://api.coinpaprika.com/v1";
 const COIN_LIST_LIMIT = 1000;
 const COIN_CACHE_DAYS = 7;
 const PRICE_CACHE_MINUTES = 15;
+const ASSET_VERSION =
+  new URL(document.currentScript?.src || window.location.href).searchParams.get("v") || "dev";
 
 const STORAGE_KEYS = {
   transactions: "cit.transactions",
@@ -1597,7 +1599,7 @@ function init() {
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      navigator.serviceWorker.register(`./service-worker.js?v=${ASSET_VERSION}`).catch(() => {});
     });
   }
 }
