@@ -110,6 +110,7 @@ let buySellChart = null;
 let performanceChart = null;
 let latestMetrics = null;
 let deferredInstallPrompt = null;
+let editingTransactionId = null;
 
 const percentageLabelPlugin = {
   id: "percentageLabels",
@@ -187,6 +188,13 @@ function withAlpha(hex, alpha) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function escapeAttribute(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+}
+
 function formatDate(value) {
   if (!value) return "—";
   const date = new Date(value);
@@ -197,6 +205,13 @@ function formatDate(value) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function toDatetimeLocalInputValue(value) {
+  if (!value) return getLocalDatetimeValue();
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return getLocalDatetimeValue();
+  return getLocalDatetimeValue(date);
 }
 
 function getLocalDatetimeValue(date = new Date()) {
@@ -468,7 +483,7 @@ function selectCoinFromResults(target) {
   renderCoinResults([]);
 }
 
-function validateTransaction(transaction) {
+function validateTransaction(transaction, { excludeId } = {}) {
   if (!transaction.symbol) {
     return "Symbol is required.";
   }
@@ -478,7 +493,10 @@ function validateTransaction(transaction) {
   if (!transaction.price || transaction.price <= 0) {
     return "Price must be greater than zero.";
   }
-  const testTransactions = [...state.transactions, transaction].sort(
+  const baseTransactions = excludeId
+    ? state.transactions.filter((tx) => tx.id !== excludeId)
+    : state.transactions;
+  const testTransactions = [...baseTransactions, transaction].sort(
     (a, b) => new Date(a.date) - new Date(b.date),
   );
   const holdings = {};
@@ -527,6 +545,84 @@ function addTransaction(event) {
   setTxType(currentType);
   updateTotalPreview();
   setMessage("Transaction added.", false);
+  render();
+}
+
+function buildInlineEditTotalClass(total) {
+  if (total > 0) return "positive";
+  if (total < 0) return "negative";
+  return "";
+}
+
+function updateInlineEditRowTotal(row) {
+  if (!row) return;
+  const typeInput = row.querySelector('[data-field="type"]');
+  const quantityInput = row.querySelector('[data-field="quantity"]');
+  const priceInput = row.querySelector('[data-field="price"]');
+  const feeInput = row.querySelector('[data-field="fee"]');
+  const totalCell = row.querySelector("[data-inline-total]");
+  if (!typeInput || !quantityInput || !priceInput || !feeInput || !totalCell) return;
+
+  const type = typeInput.value === "sell" ? "sell" : "buy";
+  const quantity = parseFloat(quantityInput.value) || 0;
+  const price = parseFloat(priceInput.value) || 0;
+  const fee = parseFloat(feeInput.value) || 0;
+  const total = type === "sell" ? quantity * price - fee : -(quantity * price + fee);
+
+  totalCell.textContent = formatMoney(total);
+  totalCell.classList.remove("positive", "negative");
+  const totalClass = buildInlineEditTotalClass(total);
+  if (totalClass) {
+    totalCell.classList.add(totalClass);
+  }
+}
+
+function startInlineEdit(id) {
+  const tx = state.transactions.find((entry) => entry.id === id);
+  if (!tx) return;
+  editingTransactionId = id;
+  clearMessage();
+  renderTransactions();
+}
+
+function cancelInlineEdit() {
+  if (!editingTransactionId) return;
+  editingTransactionId = null;
+  clearMessage();
+  renderTransactions();
+}
+
+function saveInlineEdit(id, row) {
+  const existing = state.transactions.find((entry) => entry.id === id);
+  if (!existing || !row) return;
+
+  const dateInput = row.querySelector('[data-field="date"]');
+  const typeInput = row.querySelector('[data-field="type"]');
+  const quantityInput = row.querySelector('[data-field="quantity"]');
+  const priceInput = row.querySelector('[data-field="price"]');
+  const feeInput = row.querySelector('[data-field="fee"]');
+  const notesInput = row.querySelector('[data-field="notes"]');
+
+  const updatedTransaction = {
+    ...existing,
+    date: dateInput?.value || existing.date,
+    type: typeInput?.value === "sell" ? "sell" : "buy",
+    quantity: parseFloat(quantityInput?.value || ""),
+    price: parseFloat(priceInput?.value || ""),
+    fee: parseFloat(feeInput?.value || "") || 0,
+    notes: (notesInput?.value || "").trim(),
+  };
+
+  const error = validateTransaction(updatedTransaction, { excludeId: id });
+  if (error) {
+    setMessage(error, true);
+    return;
+  }
+
+  state.transactions = state.transactions.map((entry) => (entry.id === id ? updatedTransaction : entry));
+  saveTransactions();
+  editingTransactionId = null;
+  setMessage("Transaction updated.", false);
   render();
 }
 
@@ -743,6 +839,9 @@ function renderHoldingsTable(metrics) {
 
 function renderTransactions() {
   const tbody = els.txTable.querySelector("tbody");
+  if (editingTransactionId && !state.transactions.some((tx) => tx.id === editingTransactionId)) {
+    editingTransactionId = null;
+  }
   const filterCoin = els.filterCoin ? els.filterCoin.value : "all";
   const filterType = els.filterType.value;
   const filterText = els.filterText.value.trim().toLowerCase();
@@ -773,19 +872,55 @@ function renderTransactions() {
   }
 
   for (const tx of filtered) {
-    const total = tx.type === "sell" ? tx.quantity * tx.price - tx.fee : -(tx.quantity * tx.price + tx.fee);
     const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${formatDate(tx.date)}</td>
-      <td><span class="badge ${tx.type}">${tx.type}</span></td>
-      <td>${tx.symbol}${tx.name ? ` • ${tx.name}` : ""}</td>
-      <td>${formatNumber(tx.quantity)}</td>
-      <td>${formatMoney(tx.price)}</td>
-      <td>${formatMoney(tx.fee)}</td>
-      <td class="${total >= 0 ? "positive" : "negative"}">${formatMoney(total)}</td>
-      <td>${tx.notes || ""}</td>
-      <td><button type="button" class="ghost" data-id="${tx.id}">Delete</button></td>
-    `;
+    if (tx.id === editingTransactionId) {
+      const total = tx.type === "sell" ? tx.quantity * tx.price - tx.fee : -(tx.quantity * tx.price + tx.fee);
+      const totalClass = buildInlineEditTotalClass(total);
+      const notesValue = escapeAttribute(tx.notes || "");
+      row.classList.add("row-editing");
+      row.dataset.id = tx.id;
+      row.innerHTML = `
+        <td>
+          <input type="datetime-local" class="inline-input inline-date" data-field="date" value="${toDatetimeLocalInputValue(tx.date)}" />
+        </td>
+        <td>
+          <select class="inline-input inline-select" data-field="type">
+            <option value="buy"${tx.type === "buy" ? " selected" : ""}>buy</option>
+            <option value="sell"${tx.type === "sell" ? " selected" : ""}>sell</option>
+          </select>
+        </td>
+        <td>${tx.symbol}${tx.name ? ` • ${tx.name}` : ""}</td>
+        <td><input type="number" class="inline-input inline-number" data-field="quantity" step="any" min="0" value="${tx.quantity}" /></td>
+        <td><input type="number" class="inline-input inline-number" data-field="price" step="any" min="0" value="${tx.price}" /></td>
+        <td><input type="number" class="inline-input inline-number" data-field="fee" step="any" min="0" value="${tx.fee}" /></td>
+        <td data-inline-total class="${totalClass}">${formatMoney(total)}</td>
+        <td><input type="text" class="inline-input inline-note" data-field="notes" value="${notesValue}" maxlength="200" /></td>
+        <td>
+          <div class="tx-actions">
+            <button type="button" class="ghost" data-action="save" data-id="${tx.id}">Save</button>
+            <button type="button" class="ghost" data-action="cancel" data-id="${tx.id}">Cancel</button>
+          </div>
+        </td>
+      `;
+    } else {
+      const total = tx.type === "sell" ? tx.quantity * tx.price - tx.fee : -(tx.quantity * tx.price + tx.fee);
+      row.innerHTML = `
+        <td>${formatDate(tx.date)}</td>
+        <td><span class="badge ${tx.type}">${tx.type}</span></td>
+        <td>${tx.symbol}${tx.name ? ` • ${tx.name}` : ""}</td>
+        <td>${formatNumber(tx.quantity)}</td>
+        <td>${formatMoney(tx.price)}</td>
+        <td>${formatMoney(tx.fee)}</td>
+        <td class="${total >= 0 ? "positive" : "negative"}">${formatMoney(total)}</td>
+        <td>${tx.notes || ""}</td>
+        <td>
+          <div class="tx-actions">
+            <button type="button" class="ghost icon-button" data-action="edit" data-id="${tx.id}" aria-label="Edit transaction" title="Edit transaction"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button>
+            <button type="button" class="ghost danger icon-button" data-action="delete" data-id="${tx.id}" aria-label="Delete transaction" title="Delete transaction"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>
+          </div>
+        </td>
+      `;
+    }
     tbody.appendChild(row);
   }
 }
@@ -1357,15 +1492,46 @@ function clearAll() {
   render();
 }
 
-function handleDelete(event) {
+function handleTransactionTableClick(event) {
   const button = event.target.closest("button[data-id]");
   if (!button) return;
   const id = button.dataset.id;
-  const confirmed = window.confirm("Delete this transaction?");
-  if (!confirmed) return;
-  state.transactions = state.transactions.filter((tx) => tx.id !== id);
-  saveTransactions();
-  render();
+  const action = button.dataset.action || "delete";
+
+  if (action === "edit") {
+    startInlineEdit(id);
+    return;
+  }
+
+  if (action === "cancel") {
+    cancelInlineEdit();
+    return;
+  }
+
+  if (action === "save") {
+    const row = button.closest("tr");
+    saveInlineEdit(id, row);
+    return;
+  }
+
+  if (action === "delete") {
+    const confirmed = window.confirm("Delete this transaction?");
+    if (!confirmed) return;
+    state.transactions = state.transactions.filter((tx) => tx.id !== id);
+    if (editingTransactionId === id) {
+      editingTransactionId = null;
+    }
+    saveTransactions();
+    render();
+  }
+}
+
+function handleTransactionTableInput(event) {
+  const field = event.target?.dataset?.field;
+  if (!field) return;
+  if (!["type", "quantity", "price", "fee"].includes(field)) return;
+  const row = event.target.closest("tr");
+  updateInlineEditRowTotal(row);
 }
 
 function bindEvents() {
@@ -1407,7 +1573,9 @@ function bindEvents() {
     event.target.value = "";
   });
   els.clearAllBtn.addEventListener("click", clearAll);
-  els.txTable.addEventListener("click", handleDelete);
+  els.txTable.addEventListener("click", handleTransactionTableClick);
+  els.txTable.addEventListener("input", handleTransactionTableInput);
+  els.txTable.addEventListener("change", handleTransactionTableInput);
 }
 
 function init() {
