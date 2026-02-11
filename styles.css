@@ -302,6 +302,17 @@ strong {
   gap: 12px;
 }
 
+.settings-currency {
+  display: grid;
+  gap: 8px;
+  max-width: 360px;
+  margin-bottom: 14px;
+}
+
+.settings-currency .note {
+  margin: 0;
+}
+
 button {
   font-family: "Sora", sans-serif;
   border: none;
