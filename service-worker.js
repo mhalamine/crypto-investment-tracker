@@ -1,4 +1,4 @@
-const ASSET_VERSION = "2026-02-11-2";
+const ASSET_VERSION = "2026-02-11-3";
 const CACHE_NAME = `cit-static-${ASSET_VERSION}`;
 const RUNTIME_CACHE = `cit-runtime-${ASSET_VERSION}`;
 const withVersion = (path) => `${path}?v=${ASSET_VERSION}`;
