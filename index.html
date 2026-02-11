@@ -9,9 +9,9 @@
   <meta name="description" content="Track crypto buys, sells, averages, and portfolio performance." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="manifest" href="manifest.json?v=2026-02-06-1" />
-  <link rel="icon" href="icons/icon-192.png?v=2026-02-06-1" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png?v=2026-02-06-1" />
+  <link rel="manifest" href="manifest.json?v=2026-02-11-1" />
+  <link rel="icon" href="icons/icon-192.png?v=2026-02-11-1" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png?v=2026-02-11-1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -20,7 +20,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=2026-02-06-1" />
+  <link rel="stylesheet" href="styles.css?v=2026-02-11-1" />
 </head>
 
 <body>
@@ -58,7 +58,7 @@
           <div class="card form-card">
             <div class="section-title">
               <h2>Add Transaction</h2>
-              <p>Enter what you bought or sold. Prices are recorded in USD.</p>
+              <p>Enter what you bought or sold. Values are displayed in your selected currency.</p>
             </div>
             <form id="txForm" autocomplete="off">
               <div class="field-row">
@@ -113,11 +113,11 @@
                   <input id="txQuantity" type="number" min="0" step="any" required />
                 </label>
                 <label>
-                  Price (USD)
+                  Price (<span data-currency-code>USD</span>)
                   <input id="txPrice" type="number" min="0" step="any" required />
                 </label>
                 <label>
-                  Fee (USD)
+                  Fee (<span data-currency-code>USD</span>)
                   <input id="txFee" type="number" min="0" step="any" placeholder="0" />
                 </label>
               </div>
@@ -256,7 +256,7 @@
           <div class="card">
             <div class="section-title">
               <h2>Buy vs Sell Volume</h2>
-              <p>Monthly transaction volume in USD.</p>
+              <p>Monthly transaction volume.</p>
             </div>
             <div class="chart-wrap">
               <canvas id="buySellChart" height="240"></canvas>
@@ -322,6 +322,13 @@
             <h2>Data &amp; Updates</h2>
             <p>Refresh live prices, export your history, or back up your data.</p>
           </div>
+          <div class="settings-currency">
+            <label for="defaultCurrencySelect">
+              Default currency
+              <select id="defaultCurrencySelect"></select>
+            </label>
+            <p id="currencyStatus" class="note"></p>
+          </div>
           <div class="settings-actions">
             <button class="ghost" id="refreshPricesBtn" type="button">Refresh Prices</button>
             <button class="ghost" id="exportCsvBtn" type="button">Export CSV</button>
@@ -363,7 +370,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="app.js?v=2026-02-06-1"></script>
+  <script src="app.js?v=2026-02-11-1"></script>
 </body>
 
 </html>

@@ -2,6 +2,24 @@ const API_BASE = "https://api.coinpaprika.com/v1";
 const COIN_LIST_LIMIT = 1000;
 const COIN_CACHE_DAYS = 7;
 const PRICE_CACHE_MINUTES = 15;
+const DEFAULT_CURRENCY = "USD";
+const SUPPORTED_CURRENCIES = [
+  { code: "USD", label: "US Dollar (USD)" },
+  { code: "EUR", label: "Euro (EUR)" },
+  { code: "GBP", label: "British Pound (GBP)" },
+  { code: "LBP", label: "Lebanese Pound (LBP)" },
+  { code: "OMR", label: "Omani Rial (OMR)" },
+  { code: "AED", label: "UAE Dirham (AED)" },
+  { code: "SAR", label: "Saudi Riyal (SAR)" },
+  { code: "KWD", label: "Kuwaiti Dinar (KWD)" },
+  { code: "QAR", label: "Qatari Riyal (QAR)" },
+  { code: "BHD", label: "Bahraini Dinar (BHD)" },
+  { code: "CAD", label: "Canadian Dollar (CAD)" },
+  { code: "AUD", label: "Australian Dollar (AUD)" },
+  { code: "JPY", label: "Japanese Yen (JPY)" },
+  { code: "CHF", label: "Swiss Franc (CHF)" },
+];
+const SUPPORTED_CURRENCY_CODES = new Set(SUPPORTED_CURRENCIES.map((currency) => currency.code));
 const ASSET_VERSION =
   new URL(document.currentScript?.src || window.location.href).searchParams.get("v") || "dev";
 
@@ -12,25 +30,18 @@ const STORAGE_KEYS = {
   coins: "cit.coins",
   coinsUpdatedAt: "cit.coins.updatedAt",
   activeTab: "cit.activeTab",
+  defaultCurrency: "cit.defaultCurrency",
 };
 
 const state = {
   transactions: [],
   prices: {},
   coins: [],
+  defaultCurrency: DEFAULT_CURRENCY,
 };
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 2,
-});
-
-const currencyFormatterSmall = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 6,
-});
+let currencyFormatter = buildCurrencyFormatter(DEFAULT_CURRENCY, 2);
+let currencyFormatterSmall = buildCurrencyFormatter(DEFAULT_CURRENCY, 6);
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 8,
@@ -95,6 +106,9 @@ const els = {
   restoreBackupBtn: document.getElementById("restoreBackupBtn"),
   backupFileInput: document.getElementById("backupFileInput"),
   clearAllBtn: document.getElementById("clearAllBtn"),
+  defaultCurrencySelect: document.getElementById("defaultCurrencySelect"),
+  currencyStatus: document.getElementById("currencyStatus"),
+  currencyCodeLabels: Array.from(document.querySelectorAll("[data-currency-code]")),
   installPrompt: document.getElementById("installPrompt"),
   installNowBtn: document.getElementById("installNowBtn"),
   installLaterBtn: document.getElementById("installLaterBtn"),
@@ -157,6 +171,27 @@ function safeParse(value, fallback) {
   }
 }
 
+function normalizeCurrencyCode(value) {
+  const normalized = String(value || "").trim().toUpperCase();
+  if (!SUPPORTED_CURRENCY_CODES.has(normalized)) {
+    return DEFAULT_CURRENCY;
+  }
+  return normalized;
+}
+
+function buildCurrencyFormatter(currencyCode, maximumFractionDigits) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: normalizeCurrencyCode(currencyCode),
+    maximumFractionDigits,
+  });
+}
+
+function updateCurrencyFormatters() {
+  currencyFormatter = buildCurrencyFormatter(state.defaultCurrency, 2);
+  currencyFormatterSmall = buildCurrencyFormatter(state.defaultCurrency, 6);
+}
+
 function formatMoney(value) {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return "—";
@@ -164,6 +199,44 @@ function formatMoney(value) {
   const abs = Math.abs(value);
   const formatter = abs > 0 && abs < 1 ? currencyFormatterSmall : currencyFormatter;
   return formatter.format(value);
+}
+
+function updateCurrencyLabels() {
+  if (!els.currencyCodeLabels?.length) return;
+  els.currencyCodeLabels.forEach((label) => {
+    label.textContent = state.defaultCurrency;
+  });
+}
+
+function setCurrencyStatus(message, isError = false) {
+  if (!els.currencyStatus) return;
+  els.currencyStatus.textContent = message;
+  els.currencyStatus.classList.toggle("negative", isError);
+}
+
+function refreshCurrencyStatus() {
+  setCurrencyStatus(`Values are not converted. Display currency: ${state.defaultCurrency}.`);
+}
+
+function applyDefaultCurrency(currencyCode, { persist = true } = {}) {
+  state.defaultCurrency = normalizeCurrencyCode(currencyCode);
+  updateCurrencyFormatters();
+  updateCurrencyLabels();
+  if (els.defaultCurrencySelect) {
+    els.defaultCurrencySelect.value = state.defaultCurrency;
+  }
+  if (persist) {
+    localStorage.setItem(STORAGE_KEYS.defaultCurrency, state.defaultCurrency);
+  }
+  refreshCurrencyStatus();
+}
+
+function populateCurrencyOptions() {
+  if (!els.defaultCurrencySelect) return;
+  const options = SUPPORTED_CURRENCIES.map(
+    (currency) => `<option value="${currency.code}">${currency.label}</option>`,
+  ).join("");
+  els.defaultCurrencySelect.innerHTML = options;
 }
 
 function formatNumber(value) {
@@ -225,6 +298,7 @@ function loadState() {
   state.transactions = safeParse(localStorage.getItem(STORAGE_KEYS.transactions), []);
   state.prices = safeParse(localStorage.getItem(STORAGE_KEYS.prices), {});
   state.coins = safeParse(localStorage.getItem(STORAGE_KEYS.coins), []);
+  state.defaultCurrency = normalizeCurrencyCode(localStorage.getItem(STORAGE_KEYS.defaultCurrency));
 }
 
 function saveTransactions() {
@@ -776,8 +850,8 @@ function renderSummary(metrics) {
 
   const lastUpdated = localStorage.getItem(STORAGE_KEYS.pricesUpdatedAt);
   const updatedNote = lastUpdated
-    ? `Live prices updated ${new Date(lastUpdated).toLocaleString()} (CoinPaprika).`
-    : "Live prices not loaded yet (CoinPaprika).";
+    ? `Live prices updated ${new Date(lastUpdated).toLocaleString()} (CoinPaprika). Values shown in ${state.defaultCurrency}.`
+    : `Live prices not loaded yet (CoinPaprika). Values shown in ${state.defaultCurrency}.`;
   const missingNote =
     metrics.missingPrices > 0
       ? ` Missing prices for ${metrics.missingPrices} asset(s). Add CoinPaprika IDs to enable live pricing.`
@@ -876,7 +950,10 @@ function renderTransactions() {
   for (const tx of filtered) {
     const row = document.createElement("tr");
     if (tx.id === editingTransactionId) {
-      const total = tx.type === "sell" ? tx.quantity * tx.price - tx.fee : -(tx.quantity * tx.price + tx.fee);
+      const total =
+        tx.type === "sell"
+          ? tx.quantity * tx.price - tx.fee
+          : -(tx.quantity * tx.price + tx.fee);
       const totalClass = buildInlineEditTotalClass(total);
       const notesValue = escapeAttribute(tx.notes || "");
       row.classList.add("row-editing");
@@ -1414,6 +1491,7 @@ function buildBackupPayload() {
       pricesUpdatedAt: localStorage.getItem(STORAGE_KEYS.pricesUpdatedAt),
       coins: state.coins,
       coinsUpdatedAt: localStorage.getItem(STORAGE_KEYS.coinsUpdatedAt),
+      defaultCurrency: state.defaultCurrency,
     },
   };
 }
@@ -1441,14 +1519,17 @@ function applyBackupData(rawData) {
   const coins = Array.isArray(data.coins) ? data.coins : [];
   const pricesUpdatedAt = data.pricesUpdatedAt || null;
   const coinsUpdatedAt = data.coinsUpdatedAt || null;
+  const defaultCurrency = normalizeCurrencyCode(data.defaultCurrency);
 
   state.transactions = transactions;
   state.prices = prices;
   state.coins = coins;
+  state.defaultCurrency = defaultCurrency;
 
   localStorage.setItem(STORAGE_KEYS.transactions, JSON.stringify(transactions));
   localStorage.setItem(STORAGE_KEYS.prices, JSON.stringify(prices));
   localStorage.setItem(STORAGE_KEYS.coins, JSON.stringify(coins));
+  localStorage.setItem(STORAGE_KEYS.defaultCurrency, defaultCurrency);
 
   if (pricesUpdatedAt) {
     localStorage.setItem(STORAGE_KEYS.pricesUpdatedAt, pricesUpdatedAt);
@@ -1474,6 +1555,8 @@ function restoreBackup(file) {
       );
       if (!confirmed) return;
       applyBackupData(parsed);
+      applyDefaultCurrency(state.defaultCurrency);
+      updateTotalPreview();
       render();
       ensureCoinSearchList();
       setMessage("Backup restored.", false);
@@ -1536,6 +1619,15 @@ function handleTransactionTableInput(event) {
   updateInlineEditRowTotal(row);
 }
 
+function handleDefaultCurrencyChange(event) {
+  const nextCurrency = normalizeCurrencyCode(event.target.value);
+  if (nextCurrency === state.defaultCurrency) return;
+  applyDefaultCurrency(nextCurrency);
+  updateTotalPreview();
+  render();
+  setMessage(`Default currency set to ${state.defaultCurrency}.`, false);
+}
+
 function bindEvents() {
   if (els.tabList) {
     els.tabList.addEventListener("keydown", handleTabKeydown);
@@ -1565,6 +1657,9 @@ function bindEvents() {
   }
   els.filterType.addEventListener("change", render);
   els.filterText.addEventListener("input", render);
+  if (els.defaultCurrencySelect) {
+    els.defaultCurrencySelect.addEventListener("change", handleDefaultCurrencyChange);
+  }
   els.refreshPricesBtn.addEventListener("click", () => refreshPrices({ silent: false }));
   els.exportCsvBtn.addEventListener("click", exportCsv);
   els.downloadBackupBtn.addEventListener("click", downloadBackup);
@@ -1582,6 +1677,8 @@ function bindEvents() {
 
 function init() {
   loadState();
+  populateCurrencyOptions();
+  applyDefaultCurrency(state.defaultCurrency, { persist: false });
   els.txDate.value = getLocalDatetimeValue();
   setTxType(els.txType.value || "buy");
   updateTotalPreview();
@@ -1599,7 +1696,7 @@ function init() {
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register(`./service-worker.js?v=${ASSET_VERSION}`).catch(() => {});
+      navigator.serviceWorker.register(`./service-worker.js?v=${ASSET_VERSION}`).catch(() => { });
     });
   }
 }
